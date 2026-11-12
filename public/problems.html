@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Problems · Code Arena</title>
+  <meta name="description" content="Code Arena: practise coding problems and race a friend in real time.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/app.css">
+  <script type="module" src="/js/pages/library.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <a class="brand" href="/"><img class="brand-mark" src="/favicon.svg" alt=""> Code Arena</a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/problems.html" aria-current="page">Problems</a>
+      <a href="/arena.html">Play a Friend</a>
+      <a href="/history.html">History</a>
+    </nav>
+    <span class="header-spacer"></span>
+    <div class="guest-chip" id="guest-chip"><span class="muted">Loading…</span></div>
+  </header>
+  <div id="judge-banner" hidden></div>
+  <div id="live-region" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <main id="main" class="page">
+    <h1>Problem library</h1>
+    <section aria-labelledby="recs-title">
+      <h2 id="recs-title">Recommended for you</h2>
+      <p class="muted" id="recs-explain"></p>
+      <div id="recs"><p class="loading">Loading suggestions…</p></div>
+    </section>
+    <section aria-labelledby="all-title">
+      <h2 id="all-title" class="visually-hidden">All problems</h2>
+      <form class="filters" id="filters" role="search" aria-label="Filter problems">
+        <div class="field field-grow">
+          <label for="q">Search</label>
+          <input type="search" id="q" placeholder="Title or topic" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty"><option value="">All</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select>
+        </div>
+        <div class="field">
+          <label for="topic">Topic</label>
+          <select id="topic"><option value="">All topics</option></select>
+        </div>
+        <button class="btn" type="reset" id="clear">Clear filters</button>
+      </form>
+      <p class="muted" id="count" aria-live="polite"></p>
+      <div id="list"><p class="loading">Loading problems…</p></div>
+    </section>
+  </main>
+</body>
+</html>

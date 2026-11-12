@@ -1,0 +1,34 @@
+{
+  "id": "unique-window",
+  "number": 6,
+  "title": "Unique Window",
+  "difficulty": "medium",
+  "tags": ["sliding-window", "strings", "hash-map"],
+  "primaryTopic": "sliding-window",
+  "statement": [
+    "A password auditor wants to know the longest stretch of a string in which no character repeats.",
+    "Find the length of the longest contiguous substring whose characters are all different."
+  ],
+  "inputFormat": [
+    "A single line containing a nonempty string of lowercase letters `a`–`z`."
+  ],
+  "outputFormat": [
+    "Print the length of the longest substring with no repeated character."
+  ],
+  "constraints": [
+    "1 ≤ length ≤ 200000",
+    "The string contains only lowercase ASCII letters."
+  ],
+  "examples": [
+    { "input": "pwwkew\n", "output": "3\n", "explanation": "\"wke\" has three distinct characters." },
+    { "input": "abcadefa\n", "output": "6\n", "explanation": "\"bcadef\" is the longest window without a repeat." }
+  ],
+  "starter": {
+    "input": ["Line 1: a lowercase string s"],
+    "output": "the length of the longest substring without repeated characters"
+  },
+  "private": {
+    "complexity": "O(n) sliding window storing the last index of each letter. Restarting from every position is O(26n) which also passes; O(n^2) substring checks time out.",
+    "notes": "When a repeat is found, move the left edge to max(left, last[c] + 1); never move it backwards (see 'abba')."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "merge-maintenance-slots",
+  "number": 7,
+  "title": "Merge Maintenance Slots",
+  "difficulty": "medium",
+  "tags": ["sorting", "intervals"],
+  "primaryTopic": "intervals",
+  "statement": [
+    "Several teams booked maintenance windows on the same server. Each booking is a closed interval `[l, r]` of integer minutes, which includes both endpoints.",
+    "Combine bookings that overlap into a single window. Two bookings overlap when they share at least one minute, so `[1, 3]` and `[3, 5]` merge into `[1, 5]`. Bookings that only touch as neighbours, such as `[1, 2]` and `[3, 4]`, stay separate.",
+    "Print the merged windows sorted by their left endpoint."
+  ],
+  "inputFormat": [
+    "The first line contains an integer `n`.",
+    "Each of the next `n` lines contains two integers `l r`."
+  ],
+  "outputFormat": [
+    "On the first line print `k`, the number of merged windows.",
+    "Then print `k` lines, each with `l r` for one merged window, sorted by `l`."
+  ],
+  "constraints": [
+    "1 ≤ n ≤ 100000",
+    "-10^9 ≤ l ≤ r ≤ 10^9",
+    "Bookings are given in any order. The output can contain up to 100001 lines, so build it efficiently (for example with a string builder) instead of printing one value at a time with flushing."
+  ],
+  "examples": [
+    { "input": "4\n5 7\n1 3\n3 5\n9 10\n", "output": "2\n1 7\n9 10\n", "explanation": "[1,3], [3,5] and [5,7] chain into [1,7]." },
+    { "input": "3\n1 2\n3 4\n2 2\n", "output": "2\n1 2\n3 4\n", "explanation": "[2,2] lies inside [1,2]; [3,4] only touches it and stays separate." }
+  ],
+  "starter": {
+    "input": ["Line 1: n", "Next n lines: l r (closed interval)"],
+    "output": "k, then k lines 'l r' sorted by l"
+  },
+  "private": {
+    "complexity": "O(n log n) sort by left endpoint, then one merge pass. Repeatedly merging pairs is O(n^2) and times out.",
+    "notes": "Merge when next.l <= current.r (closed intervals). Extend current.r with max, because a nested interval can end earlier."
+  }
+}

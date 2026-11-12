@@ -1,0 +1,35 @@
+{
+  "id": "island-count",
+  "number": 9,
+  "title": "Island Count",
+  "difficulty": "medium",
+  "tags": ["grids", "bfs", "dfs", "graphs"],
+  "primaryTopic": "grids",
+  "statement": [
+    "A satellite map is a grid of cells, where `1` is land and `0` is water. An island is a group of land cells connected horizontally or vertically. Cells that touch only at a corner (diagonally) are not connected.",
+    "Count the islands on the map."
+  ],
+  "inputFormat": [
+    "The first line contains two integers `r` and `c`.",
+    "Each of the next `r` lines contains a string of exactly `c` characters, each `0` or `1`."
+  ],
+  "outputFormat": [
+    "Print the number of islands."
+  ],
+  "constraints": [
+    "1 ≤ r, c ≤ 400",
+    "A single island can contain all 160000 cells and form a long winding path. Recursive DFS may overflow the call stack; an explicit queue or stack is safer."
+  ],
+  "examples": [
+    { "input": "3 4\n1100\n0101\n0001\n", "output": "2\n", "explanation": "The top-left block is one island; the cells in column 3 form another." },
+    { "input": "4 5\n11000\n11000\n00100\n00011\n", "output": "3\n", "explanation": "Three groups; the middle cell only touches the others diagonally." }
+  ],
+  "starter": {
+    "input": ["Line 1: r c", "Next r lines: a string of c characters, each 0 or 1"],
+    "output": "the number of 4-directionally connected groups of 1s"
+  },
+  "private": {
+    "complexity": "O(r · c) BFS/DFS with a visited marker, or union-find.",
+    "notes": "The serpentine hidden grid creates a path of about 80000 cells, which breaks naive recursion in Python, Java and JavaScript."
+  }
+}

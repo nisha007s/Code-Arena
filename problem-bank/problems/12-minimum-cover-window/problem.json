@@ -1,0 +1,36 @@
+{
+  "id": "minimum-cover-window",
+  "number": 12,
+  "title": "Minimum Cover Window",
+  "difficulty": "hard",
+  "tags": ["sliding-window", "strings", "hash-map"],
+  "primaryTopic": "sliding-window",
+  "statement": [
+    "You are given a long text `S` and a short pattern `T`. Find the shortest contiguous substring of `S` that contains every character of `T`, counting repeats: if `T` has two `a` characters, the substring must contain at least two `a` characters.",
+    "If several shortest substrings exist, print the one that starts earliest in `S`. If no substring works, print `-1`."
+  ],
+  "inputFormat": [
+    "The first line contains the string `S`.",
+    "The second line contains the string `T`.",
+    "Both are nonempty and contain only lowercase letters `a`–`z`."
+  ],
+  "outputFormat": [
+    "Print the shortest covering substring, or `-1`."
+  ],
+  "constraints": [
+    "1 ≤ |S| ≤ 200000",
+    "1 ≤ |T| ≤ 200000"
+  ],
+  "examples": [
+    { "input": "adobecodebanc\nabc\n", "output": "banc\n", "explanation": "\"banc\" contains a, b and c, and no shorter window does." },
+    { "input": "abcdab\nbd\n", "output": "bcd\n", "explanation": "\"bcd\" and \"dab\" both have length 3; \"bcd\" starts earlier." }
+  ],
+  "starter": {
+    "input": ["Line 1: string S", "Line 2: string T"],
+    "output": "the shortest substring of S covering T (earliest on ties), or -1"
+  },
+  "private": {
+    "complexity": "O(|S| + |T|) two-pointer window with letter counts and a 'missing' counter.",
+    "notes": "Record a window only when it is strictly shorter than the best so far; scanning left to right then gives the earliest start among equal lengths."
+  }
+}

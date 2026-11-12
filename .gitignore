@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Local data: SQLite database (guests, rooms, submissions with source code)
+data/
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
+
+# Local configuration and secrets (commit config.example.json instead)
+config.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.*
+
+# Hidden test fixtures are regenerated deterministically on `npm ci` / `npm run fixtures`;
+# problem-bank/fixtures.lock.json (committed) pins their SHA-256 checksums.
+problem-bank/problems/*/tests/
+
+# Test output, screenshots, logs, temporary files
+test-artifacts/
+coverage/
+*.log
+npm-debug.log*
+*.tmp
+*.temp
+tmp/
+.cache/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

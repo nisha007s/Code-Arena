@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Arena</title>
+  <meta name="description" content="Code Arena: practise coding problems and race a friend in real time.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/app.css">
+  <script type="module" src="/js/pages/home.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <a class="brand" href="/"><img class="brand-mark" src="/favicon.svg" alt=""> Code Arena</a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/problems.html">Problems</a>
+      <a href="/arena.html">Play a Friend</a>
+      <a href="/history.html">History</a>
+    </nav>
+    <span class="header-spacer"></span>
+    <div class="guest-chip" id="guest-chip"><span class="muted">Loading…</span></div>
+  </header>
+  <div id="judge-banner" hidden></div>
+  <div id="live-region" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <main id="main" class="page">
+    <section class="hero">
+      <h1>Code Arena</h1>
+      <p>Practise twelve original coding problems in five languages, then challenge a friend to a real-time 1v1 race. Every verdict comes from a real judge running your code against hidden tests.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-large" href="/problems.html">Browse Problems</a>
+        <a class="btn btn-large" href="/arena.html">Play a Friend</a>
+      </div>
+    </section>
+    <div class="grid-2">
+      <section class="card" aria-labelledby="progress-title">
+        <h2 id="progress-title">Your progress</h2>
+        <div id="progress"><p class="loading">Loading progress…</p></div>
+      </section>
+      <section class="card" aria-labelledby="how-title">
+        <h2 id="how-title">How a match works</h2>
+        <ol class="steps">
+          <li>Create a private room and send your friend the link or six-character code.</li>
+          <li>Both click <strong>Ready</strong>; the host starts a 10-minute round.</li>
+          <li>Solve the same problem in any language. The earliest accepted submission wins.</li>
+        </ol>
+      </section>
+    </div>
+    <section class="mt-4" aria-labelledby="recs-title">
+      <h2 id="recs-title">Suggested next</h2>
+      <div id="recs"><p class="loading">Loading suggestions…</p></div>
+    </section>
+  </main>
+</body>
+</html>

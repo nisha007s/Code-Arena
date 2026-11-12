@@ -1,0 +1,37 @@
+{
+  "id": "target-pair",
+  "number": 1,
+  "title": "Target Pair",
+  "difficulty": "easy",
+  "tags": ["arrays", "hash-map"],
+  "primaryTopic": "hash-map",
+  "statement": [
+    "A warehouse scanner reports a list of package weights. Given a target weight, decide whether two different packages in the list weigh exactly the target together.",
+    "The two packages must be at different positions in the list. They may have the same weight, but a single package cannot be used twice."
+  ],
+  "inputFormat": [
+    "The first line contains two integers `n` and `target`.",
+    "The second line contains `n` integers `a[0] … a[n-1]`, separated by spaces."
+  ],
+  "outputFormat": [
+    "Print `YES` if there are indices `i ≠ j` with `a[i] + a[j] = target`. Otherwise print `NO`."
+  ],
+  "constraints": [
+    "2 ≤ n ≤ 200000",
+    "-10^9 ≤ a[i] ≤ 10^9",
+    "-10^9 ≤ target ≤ 10^9",
+    "A sum of two values can reach ±2·10^9, which overflows a signed 32-bit integer. Use a 64-bit type (long in Java/C#, long long in C++) for sums or differences."
+  ],
+  "examples": [
+    { "input": "5 9\n2 7 11 -3 4\n", "output": "YES\n", "explanation": "2 + 7 = 9." },
+    { "input": "4 100\n10 20 30 40\n", "output": "NO\n", "explanation": "No two different values add up to 100." }
+  ],
+  "starter": {
+    "input": ["Line 1: n target", "Line 2: n integers a[0..n-1]"],
+    "output": "YES or NO"
+  },
+  "private": {
+    "complexity": "O(n) expected time with a hash set of values seen so far; O(n log n) with sorting and two pointers. O(n^2) pair checking times out on the 200000-element hidden cases.",
+    "notes": "Check target - a[i] against the set before inserting a[i], so a single element is never paired with itself."
+  }
+}

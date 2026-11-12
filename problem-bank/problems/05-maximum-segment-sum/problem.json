@@ -1,0 +1,36 @@
+{
+  "id": "maximum-segment-sum",
+  "number": 5,
+  "title": "Maximum Segment Sum",
+  "difficulty": "medium",
+  "tags": ["dynamic-programming", "arrays"],
+  "primaryTopic": "dynamic-programming",
+  "statement": [
+    "A delivery route reports the profit (possibly negative) of each stop. The company may run any nonempty contiguous part of the route. Find the largest total profit that a contiguous segment can earn.",
+    "The segment must contain at least one stop, so when every profit is negative the answer is the largest single profit."
+  ],
+  "inputFormat": [
+    "The first line contains an integer `n`.",
+    "The second line contains `n` integers."
+  ],
+  "outputFormat": [
+    "Print the maximum sum of a nonempty contiguous segment."
+  ],
+  "constraints": [
+    "1 ≤ n ≤ 200000",
+    "-10^9 ≤ a[i] ≤ 10^9",
+    "The answer can be as large as 2·10^14. Use a 64-bit integer type (long in Java/C#, long long in C++)."
+  ],
+  "examples": [
+    { "input": "6\n-2 3 -1 4 -5 2\n", "output": "6\n", "explanation": "The segment 3, -1, 4 has sum 6." },
+    { "input": "5\n1 2 3 4 5\n", "output": "15\n", "explanation": "Taking every stop is best." }
+  ],
+  "starter": {
+    "input": ["Line 1: n", "Line 2: n integers"],
+    "output": "the largest sum of a nonempty contiguous segment (may need 64-bit)"
+  },
+  "private": {
+    "complexity": "O(n) with Kadane's recurrence best_ending_here = max(a[i], best_ending_here + a[i]). O(n^2) prefix-sum pairs time out on the 200000-element hidden cases.",
+    "notes": "Initialise with a[0], not 0, so an all-negative array returns its maximum element."
+  }
+}

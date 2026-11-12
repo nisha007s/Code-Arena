@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Play a Friend · Code Arena</title>
+  <meta name="description" content="Code Arena: practise coding problems and race a friend in real time.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/app.css">
+  <script type="module" src="/js/pages/arena.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <a class="brand" href="/"><img class="brand-mark" src="/favicon.svg" alt=""> Code Arena</a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/problems.html">Problems</a>
+      <a href="/arena.html" aria-current="page">Play a Friend</a>
+      <a href="/history.html">History</a>
+    </nav>
+    <span class="header-spacer"></span>
+    <div class="guest-chip" id="guest-chip"><span class="muted">Loading…</span></div>
+  </header>
+  <div id="judge-banner" hidden></div>
+  <div id="live-region" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <div id="conn-banner" class="banner banner-warn" role="status" hidden>Reconnecting to the match server… Your code is saved.</div>
+  <main id="main" class="workspace-page">
+    <section id="arena-start" class="page" hidden>
+      <h1>Play a friend</h1>
+      <p class="muted">Create a private room and send the invite, or join with your friend’s six-character code. Each browser (or browser profile) is a separate player.</p>
+      <div id="current-room"></div>
+      <div class="grid-2">
+        <form class="card stack" id="create-form" aria-labelledby="create-title">
+          <h2 id="create-title">Create a room</h2>
+          <div class="field">
+            <label for="room-difficulty">Problem difficulty</label>
+            <select id="room-difficulty">
+              <option value="mixed">Mixed (any difficulty)</option>
+              <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+            </select>
+          </div>
+          <p class="field-error" id="create-error" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Create private room</button>
+        </form>
+        <form class="card stack" id="join-form" aria-labelledby="join-title" novalidate>
+          <h2 id="join-title">Join a room</h2>
+          <div class="field">
+            <label for="join-code">Room code</label>
+            <input type="text" id="join-code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. K7Q2MX" aria-describedby="join-error">
+          </div>
+          <p class="field-error" id="join-error" role="alert"></p>
+          <button class="btn" type="submit">Join</button>
+        </form>
+      </div>
+    </section>
+    <section id="arena-room" class="arena-body" hidden aria-label="Match">
+      <div class="match-header" id="match-header"></div>
+      <div id="lobby" class="lobby" hidden></div>
+      <div id="results" class="results" hidden></div>
+      <div id="arena-workspace"></div>
+    </section>
+    <p id="arena-loading" class="loading page">Loading…</p>
+  </main>
+</body>
+</html>

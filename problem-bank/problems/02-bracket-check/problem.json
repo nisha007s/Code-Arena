@@ -1,0 +1,34 @@
+{
+  "id": "bracket-check",
+  "number": 2,
+  "title": "Bracket Check",
+  "difficulty": "easy",
+  "tags": ["stack", "strings"],
+  "primaryTopic": "stack",
+  "statement": [
+    "A configuration file uses three kinds of brackets: round `()`, square `[]` and curly `{}`. Before the file is loaded, a checker confirms that the brackets are balanced.",
+    "A string is balanced when every opening bracket is closed by the same kind of bracket, brackets close in the reverse order they were opened, and no closing bracket appears without a matching opener."
+  ],
+  "inputFormat": [
+    "A single line containing a nonempty string made only of the characters `()[]{}`."
+  ],
+  "outputFormat": [
+    "Print `YES` if the string is balanced, otherwise print `NO`."
+  ],
+  "constraints": [
+    "1 ≤ length of the string ≤ 200000",
+    "Nesting can be up to 100000 levels deep, so avoid recursion that uses one call per bracket."
+  ],
+  "examples": [
+    { "input": "{[()]}\n", "output": "YES\n", "explanation": "Each bracket closes in reverse order of opening." },
+    { "input": "(]\n", "output": "NO\n", "explanation": "A round bracket is closed by a square bracket." }
+  ],
+  "starter": {
+    "input": ["Line 1: a string s made of the characters ()[]{}"],
+    "output": "YES or NO"
+  },
+  "private": {
+    "complexity": "O(n) time and O(n) space with an explicit stack.",
+    "notes": "Odd length strings are always NO. A leftover opener at the end is NO."
+  }
+}

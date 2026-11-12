@@ -1,0 +1,38 @@
+{
+  "id": "cheapest-route",
+  "number": 11,
+  "title": "Cheapest Route",
+  "difficulty": "hard",
+  "tags": ["graphs", "shortest-path", "heap"],
+  "primaryTopic": "graphs",
+  "statement": [
+    "A courier network has `n` hubs numbered `1` to `n` and `m` one-way roads. Each road has a toll. Find the cheapest total toll for travelling from hub `s` to hub `t`.",
+    "Roads are directed: a road `u v w` can only be used from `u` to `v`. There may be several roads between the same pair of hubs, roads from a hub to itself, and roads with toll `0`. Travelling from a hub to itself costs `0`."
+  ],
+  "inputFormat": [
+    "The first line contains four integers `n m s t`.",
+    "Each of the next `m` lines contains three integers `u v w`: a road from `u` to `v` with toll `w`."
+  ],
+  "outputFormat": [
+    "Print the minimum total toll from `s` to `t`, or `-1` if `t` cannot be reached."
+  ],
+  "constraints": [
+    "1 ≤ n ≤ 100000",
+    "0 ≤ m ≤ 200000",
+    "1 ≤ s, t, u, v ≤ n",
+    "0 ≤ w ≤ 10^9",
+    "A route cost can reach about 10^14. Use a 64-bit integer type (long in Java/C#, long long in C++)."
+  ],
+  "examples": [
+    { "input": "4 5 1 4\n1 2 2\n1 3 8\n2 3 1\n3 4 3\n2 4 9\n", "output": "6\n", "explanation": "1 → 2 → 3 → 4 costs 2 + 1 + 3." },
+    { "input": "3 3 1 3\n1 2 4\n2 3 4\n1 3 10\n", "output": "8\n", "explanation": "Two cheap roads beat the direct road." }
+  ],
+  "starter": {
+    "input": ["Line 1: n m s t", "Next m lines: u v w (directed road u -> v with toll w)"],
+    "output": "the minimum total toll from s to t, or -1 (may need 64-bit)"
+  },
+  "private": {
+    "complexity": "O((n + m) log n) Dijkstra with a binary heap and lazy deletion. Bellman-Ford O(n·m) times out.",
+    "notes": "Skip heap entries whose distance is larger than the best known distance. Zero-weight edges are fine for Dijkstra."
+  }
+}

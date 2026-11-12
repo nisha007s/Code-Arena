@@ -1,0 +1,36 @@
+{
+  "docker": "29.9.3 linux/amd64",
+  "builtAt": "2026-11-12T18:37:46.870Z",
+  "images": {
+    "python": {
+      "image": "code-arena-judge-python:3.13",
+      "base": "python:3.13-slim-bookworm",
+      "imageId": "sha256:c3c79202dde49d95f7b266f5db0f3457242a93872664a733d1e67cd8493e64e8",
+      "version": "Python 3.13.18"
+    },
+    "javascript": {
+      "image": "code-arena-judge-node:24",
+      "base": "node:24-bookworm-slim",
+      "imageId": "sha256:4c5b7377faf903e60b3b05fd3c80e584f5669bb124dab443b681c3dffc7d010f",
+      "version": "v24.22.3"
+    },
+    "java": {
+      "image": "code-arena-judge-java:21",
+      "base": "eclipse-temurin:21-jdk-noble",
+      "imageId": "sha256:80a4430b9c049068f405dff02774b0b94b66b03a41ef80eee51e7130b716f535",
+      "version": "openjdk version \"21.0.13\" 2026-10-20 LTS"
+    },
+    "cpp": {
+      "image": "code-arena-judge-cpp:gcc14",
+      "base": "gcc:14-bookworm",
+      "imageId": "sha256:7b6b13a19ede909af0fb1449495916ab3a60c38590f352638be42ef0d8b24730",
+      "version": "g++ (GCC) 14.3.0"
+    },
+    "csharp": {
+      "image": "code-arena-judge-dotnet:10",
+      "base": "mcr.microsoft.com/dotnet/sdk:10.0",
+      "imageId": "sha256:60491af93b4a7837c27e0bbcb4b8e7daba1862f33846e17525ae5e946c293875",
+      "version": "10.0.404"
+    }
+  }
+}

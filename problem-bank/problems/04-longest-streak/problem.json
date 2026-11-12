@@ -1,0 +1,34 @@
+{
+  "id": "longest-streak",
+  "number": 4,
+  "title": "Longest Streak of Ones",
+  "difficulty": "easy",
+  "tags": ["arrays"],
+  "primaryTopic": "arrays",
+  "statement": [
+    "A habit tracker records each day as `1` (habit done) or `0` (missed). Find the longest run of consecutive days on which the habit was done."
+  ],
+  "inputFormat": [
+    "The first line contains an integer `n`.",
+    "The second line contains `n` binary digits (`0` or `1`) separated by spaces."
+  ],
+  "outputFormat": [
+    "Print the length of the longest contiguous run of `1` values. Print `0` if there are none."
+  ],
+  "constraints": [
+    "1 ≤ n ≤ 200000",
+    "Every digit is 0 or 1."
+  ],
+  "examples": [
+    { "input": "7\n1 1 0 1 1 1 0\n", "output": "3\n", "explanation": "Days 3 to 5 form a run of three." },
+    { "input": "5\n0 1 0 1 0\n", "output": "1\n", "explanation": "Every run of ones has length one." }
+  ],
+  "starter": {
+    "input": ["Line 1: n", "Line 2: n binary digits separated by spaces"],
+    "output": "the longest run of consecutive 1s"
+  },
+  "private": {
+    "complexity": "O(n) single pass with a current-run counter and a best counter.",
+    "notes": "Update the best value inside the loop (or after it), otherwise a run that ends at the last day is missed."
+  }
+}
