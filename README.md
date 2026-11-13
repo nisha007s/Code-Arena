@@ -406,6 +406,7 @@ docs/api.md             exact routes, socket events, payloads, error codes, snap
 | `npm run check:starters` | Compile or parse all 60 starter templates in the real judge |
 | `npm run e2e` | Two-browser match in Chrome/Edge (set `CHROME_PATH` if needed) |
 | `npm run check:integration` | smoke + sandbox + starters + e2e |
+| `npm run screenshots` | Every page in dark and light themes, desktop and phone, after creating real activity (writes `test-artifacts/screens/`) |
 
 To run the integration scripts without Docker, using the **unsandboxed** test driver:
 `JUDGE_DRIVER=local CODE_ARENA_ALLOW_UNSANDBOXED=1 npm run judge:smoke` (in PowerShell:

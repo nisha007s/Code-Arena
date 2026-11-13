@@ -3,7 +3,7 @@
 // discards stale ones by revision, and computes the timer from the server deadline.
 import { io } from '/socket.io/socket.io.esm.min.js';
 import { api, getSession, requestId, ApiError } from '../api.js';
-import { h, initHeader, watchJudge, announce, toast, copyText, errorMessage } from '../ui.js';
+import { h, icon, avatar, initHeader, watchJudge, announce, toast, copyText, errorMessage, difficultyBadge, setWidth } from '../ui.js';
 import { Workspace } from '../workspace.js';
 
 initHeader();
@@ -35,9 +35,10 @@ function showStart(message) {
   if (message) $('join-error').textContent = message;
   api('/api/rooms/current').then(({ room }) => {
     const box = $('current-room');
-    box.replaceChildren(room ? h('div', { class: 'card row mt-4', role: 'status' },
-      h('span', {}, `You are still in room `, h('strong', {}, room.code), '.'),
-      h('a', { class: 'btn btn-primary', href: `/arena.html?room=${room.code}` }, 'Return to room')) : '');
+    box.replaceChildren(room ? h('div', { class: 'notice', role: 'status' },
+      icon('info'), h('span', {}, 'You are still in room ', h('strong', { class: 'mono' }, room.code), '.'), h('span', { class: 'spacer' }),
+      h('a', { class: 'btn btn-primary btn-small', href: `/arena.html?room=${room.code}` }, 'Return to room', icon('arrowRight'))) : '');
+    if (room) box.classList.add('mt-2');
   }).catch(() => {});
 }
 
@@ -165,23 +166,32 @@ function announceChanges(prev, s) {
   if (msg && msg !== lastAnnounced) { lastAnnounced = msg; announce(msg); }
 }
 
-function playerChip(p) {
-  if (!p) return h('div', { class: 'player muted' }, 'Waiting for opponent…');
-  const online = p.connected || (p.isYou && socket?.connected);
-  return h('div', { class: 'player' },
-    h('span', { class: 'player-name' }, p.name, p.isYou ? ' (you)' : ''),
-    h('span', { class: `conn ${online ? 'conn-on' : 'conn-off'}` }, online ? 'Online' : 'Offline'),
-    h('span', { class: `pstatus pstatus-${p.status}` }, STATUS_TEXT[p.status] || p.status));
+const isOnline = (p) => p.connected || (p.isYou && socket?.connected);
+const connEl = (p) => h('span', { class: `conn ${isOnline(p) ? 'conn-on' : 'conn-off'}` }, isOnline(p) ? 'Online' : 'Offline');
+
+// Scoreboard: player — clock — player
+function playerChip(p, side) {
+  if (!p) return h('div', { class: `player-empty ${side === 'right' ? 'player-right' : ''}` }, h('span', { class: 'avatar' }, '?'), 'Waiting for opponent…');
+  return h('div', { class: `player ${side === 'right' ? 'player-right' : ''}` },
+    avatar(p.name),
+    h('div', { class: 'player-info' },
+      h('span', { class: 'player-name' }, p.name, p.isYou ? h('span', { class: 'you' }, '(you)') : null),
+      h('span', { class: 'player-meta' }, connEl(p), h('span', { class: `pstatus pstatus-${p.status}` }, STATUS_TEXT[p.status] || p.status))));
 }
 
 const timerEl = h('span', { class: 'timer', role: 'timer', 'aria-label': 'Time remaining' }, '10:00');
+const trackFill = h('span');
+const trackEl = h('div', { class: 'time-track', 'aria-hidden': 'true' }, trackFill);
 function renderHeader() {
   if (!snap) return;
   const [a, b] = snap.players;
-  const parts = [playerChip(a), h('span', { class: 'vs', 'aria-hidden': 'true' }, 'vs'), playerChip(b), h('span', { class: 'header-spacer' })];
-  if (snap.round && snap.phase !== 'lobby') parts.push(h('span', { class: 'muted' }, `Round ${snap.round.number}`), timerEl);
-  parts.push(h('span', { class: 'muted' }, 'Room ', h('strong', {}, snap.code)));
-  headerEl.replaceChildren(...parts);
+  const inRound = snap.round && snap.phase !== 'lobby';
+  const center = h('div', { class: 'match-center' },
+    h('div', { class: 'match-meta' }, inRound ? `Round ${snap.round.number}` : 'Lobby', h('span', { 'aria-hidden': 'true' }, '·'), 'Room ', h('strong', {}, snap.code)),
+    inRound ? timerEl : h('span', { class: 'vs-mark' }, 'VS'),
+    inRound ? trackEl : null,
+    inRound && snap.round.problem ? h('span', { class: 'match-problem' }, snap.round.problem.title) : null);
+  headerEl.replaceChildren(playerChip(a, 'left'), center, playerChip(b, 'right'));
   tick();
 }
 
@@ -191,11 +201,31 @@ function tick() {
   const left = snap.phase === 'active' ? Math.max(0, snap.round.deadline - now) : 0;
   const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
   timerEl.textContent = snap.phase === 'finished' ? 'Finished' : snap.phase === 'judging' ? 'Judging…' : `${m}:${String(s).padStart(2, '0')}`;
-  timerEl.classList.toggle('timer-low', snap.phase === 'active' && left < 60000);
+  const low = snap.phase === 'active' && left < 60000;
+  timerEl.classList.toggle('timer-low', low);
+  trackEl.classList.toggle('low', low);
+  setWidth(trackFill, snap.phase === 'active' ? (left / snap.round.durationMs) * 100 : 0);
   if (snap.phase === 'active' && left < 60000 && left > 0 && !warnedMinute) { warnedMinute = true; announce('One minute left.'); }
   if (snap.phase === 'active' && left === 0) workspace?.setSubmitLock('Time is up.');
 }
 setInterval(tick, 250);
+
+// Lobby: versus stage + invite + rules
+function fighter(p, i) {
+  if (!p) {
+    return h('li', { class: 'fighter seat seat-empty empty' },
+      h('span', { class: 'avatar' }, '?'),
+      h('div', { class: 'fighter-name' }, i === 1 ? 'Empty seat' : 'Open seat'),
+      h('div', { class: 'fighter-role' }, i === 1 ? 'Waiting for your friend to join' : 'Waiting for a player'));
+  }
+  return h('li', { class: `fighter seat${p.ready ? ' is-ready' : ''}` },
+    avatar(p.name),
+    h('div', { class: 'fighter-name' }, p.name, p.isYou ? h('span', { class: 'faint' }, '(you)') : null),
+    h('div', { class: 'fighter-role' }, p.isHost ? 'Host' : 'Challenger'),
+    h('div', { class: 'fighter-state' },
+      connEl(p),
+      h('span', { class: `pstatus pstatus-${p.ready ? 'ready' : 'not_ready'}` }, p.ready ? '✓ Ready' : 'Not ready')));
+}
 
 function renderLobby() {
   lobbyEl.hidden = false;
@@ -208,36 +238,49 @@ function renderLobby() {
     const ok = await copyText(inviteUrl, urlInput);
     if (ok) { toast('Invite link copied.'); announce('Invite link copied.'); }
     else { urlInput.focus(); urlInput.select(); toast('Copying is blocked here. The link is selected: press Ctrl+C (⌘+C) to copy it.', 'error'); }
-  } }, 'Copy invite link');
+  } }, icon('copy'), 'Copy invite link');
   const you = me(), opp = opponent();
   const bothReady = snap.players.every((p) => p && p.ready && p.connected);
   let startHint = '';
   if (!opp) startHint = 'Waiting for your friend to join.';
   else if (!opp.connected) startHint = `${opp.name} is offline.`;
   else if (!bothReady) startHint = 'Both players must be ready.';
+  const statusText = !opp ? 'Waiting for opponent' : bothReady ? (snap.you.isHost ? 'Both ready — start when you are' : 'Both ready — waiting for the host') : 'Waiting for both players to be ready';
+  const pool = snap.difficulty === 'mixed' ? 'Mixed difficulty' : snap.difficulty[0].toUpperCase() + snap.difficulty.slice(1);
 
   lobbyEl.replaceChildren(
-    h('section', { class: 'card stack', 'aria-labelledby': 'invite-title' },
-      h('h2', { id: 'invite-title' }, 'Invite a friend'),
-      h('p', { class: 'muted' }, 'Send this link, or tell your friend the room code. On a LAN, the link uses the address you opened this page with.'),
-      h('div', { class: 'invite-row' }, urlInput, copyBtn),
-      h('div', {}, h('span', { class: 'muted' }, 'Room code '), h('span', { class: 'room-code', 'aria-label': `Room code ${snap.code.split('').join(' ')}` }, snap.code)),
-      h('p', { class: 'muted' }, `Problem pool: ${snap.difficulty === 'mixed' ? 'mixed difficulty' : snap.difficulty}. Rounds last 10 minutes.`)),
-    h('section', { class: 'card stack', 'aria-labelledby': 'players-title' },
-      h('h2', { id: 'players-title' }, 'Players'),
-      h('ul', { class: 'seat-list' }, snap.players.map((p, i) => p
-        ? h('li', { class: 'seat' }, h('strong', {}, p.name, p.isYou ? ' (you)' : ''), p.isHost ? h('span', { class: 'badge' }, 'Host') : null,
-          h('span', { class: `conn ${p.connected ? 'conn-on' : 'conn-off'}` }, p.connected ? 'Online' : 'Offline'),
-          h('span', { class: `pstatus pstatus-${p.ready ? 'ready' : 'not_ready'}` }, p.ready ? '✓ Ready' : 'Not ready'))
-        : h('li', { class: 'seat seat-empty' }, i === 1 ? 'Empty seat — waiting for your friend' : 'Empty seat'))),
-      h('div', { class: 'row' },
-        h('button', { class: 'btn btn-large', type: 'button', 'aria-pressed': String(Boolean(you?.ready)), onclick: () => command('room:ready', { ready: !you.ready }) }, you?.ready ? '✓ Ready' : 'Ready'),
-        snap.you.isHost
-          ? h('button', { class: 'btn btn-primary btn-large', type: 'button', disabled: !bothReady || null, 'aria-describedby': 'start-hint', onclick: () => command('room:start') }, 'Start match')
-          : h('span', { class: 'muted' }, bothReady ? 'Waiting for the host to start.' : ''),
-        h('span', { class: 'muted', id: 'start-hint' }, snap.you.isHost ? startHint : ''),
-        h('span', { class: 'header-spacer' }),
-        h('button', { class: 'btn btn-ghost', type: 'button', onclick: leaveRoom }, snap.you.isHost ? 'Close room' : 'Leave room'))),
+    h('div', { class: 'stage-head' },
+      h('div', {}, h('span', { class: 'eyebrow' }, icon('arena', 'icon icon-sm'), 'Private room'), h('h1', {}, '1v1 ', h('span', { class: 'accent' }, 'Arena')), h('p', {}, 'Real-time competitive coding. Same problem, same clock.')),
+      h('span', { class: 'badge badge-accent' }, icon('lock'), `Room ${snap.code}`)),
+    h('section', { 'aria-labelledby': 'players-title' },
+      h('h2', { id: 'players-title', class: 'visually-hidden' }, 'Players'),
+      h('ul', { class: 'versus seat-list' },
+        fighter(snap.players[0], 0),
+        h('li', { class: 'vs-big', 'aria-hidden': 'true' }, 'VS'),
+        fighter(snap.players[1], 1)),
+      h('div', { class: 'countdown' },
+        h('div', { class: 'label' }, 'Match status'),
+        h('div', { class: 'value' }, statusText),
+        h('div', { class: 'lobby-actions' },
+          h('button', { class: 'btn btn-large', type: 'button', 'aria-pressed': String(Boolean(you?.ready)), onclick: () => command('room:ready', { ready: !you.ready }) }, you?.ready ? '✓ Ready' : 'Ready'),
+          snap.you.isHost
+            ? h('button', { class: 'btn btn-primary btn-large', type: 'button', disabled: !bothReady || null, 'aria-describedby': 'start-hint', onclick: () => command('room:start') }, icon('zap'), 'Start match')
+            : null),
+        h('p', { class: 'lobby-hint', id: 'start-hint' }, snap.you.isHost ? startHint : (bothReady ? 'The host starts the 10-minute round.' : '')))),
+    h('div', { class: 'lobby-panels' },
+      h('section', { class: 'card', 'aria-labelledby': 'invite-title' },
+        h('div', { class: 'card-title' }, h('span', { class: 'icon-tile' }, icon('link')), h('h2', { id: 'invite-title' }, 'Invite a friend')),
+        h('p', { class: 'muted' }, 'Send the link or read out the code. On a LAN the link uses the address you opened this page with.'),
+        h('div', { class: 'room-code', 'aria-label': `Room code ${snap.code.split('').join(' ')}` }, snap.code.split('').map((ch) => h('span', { class: 'code-char', 'aria-hidden': 'true' }, ch))),
+        h('div', { class: 'invite-row' }, urlInput, copyBtn)),
+      h('section', { class: 'card', 'aria-labelledby': 'rules-title' },
+        h('div', { class: 'card-title' }, h('span', { class: 'icon-tile' }, icon('flag')), h('h2', { id: 'rules-title' }, 'Match rules')),
+        h('ul', { class: 'rules-list' },
+          h('li', {}, icon('layers'), h('span', {}, `Problem pool: ${pool}. Both players get the same problem.`)),
+          h('li', {}, icon('timer'), h('span', {}, '10-minute round. The clock keeps running if someone disconnects.')),
+          h('li', {}, icon('trophy'), h('span', {}, 'The earliest received submission that passes every hidden test wins.')),
+          h('li', {}, icon('lock'), h('span', {}, 'Your opponent sees only your status, never your code.'))),
+        h('div', { class: 'lobby-foot' }, h('button', { class: 'btn btn-danger-ghost', type: 'button', onclick: leaveRoom }, icon('door'), snap.you.isHost ? 'Close room' : 'Leave room')))),
   );
 }
 
@@ -262,7 +305,7 @@ function renderRound() {
     workspace?.destroy();
     workspaceRound = round.id;
     workspace = new Workspace(wsHost, {
-      problem: round.problem, guestId: guest.id, scope: `round:${round.id}`, judgeState,
+      problem: round.problem, guestId: guest.id, scope: `round:${round.id}`, judgeState, context: 'arena',
       submit: async ({ language, source, requestId: rid }) => (await api('/api/submissions', {
         method: 'POST',
         body: { requestId: rid, mode: 'submit', roomCode: code, roundId: round.id, problemId: round.problem.id, language, source },
@@ -290,21 +333,28 @@ function renderResults() {
   const r = snap.result;
   const statusText = { solved: 'Solved', not_solved: 'Did not solve', unjudged: 'Not judged (judge failure)' };
   const opp = opponent();
+  const mine = me();
+  const kind = r.outcome === 'win' ? (mine && r.winnerSeat === mine.seat ? 'win' : 'loss') : r.outcome;
+  const iconName = { win: 'trophy', loss: 'flag', draw: 'minus', void: 'alert' }[kind];
   resultsEl.hidden = false;
-  resultsEl.replaceChildren(h('section', { class: 'card stack', 'aria-labelledby': 'result-title' },
+  resultsEl.replaceChildren(h('section', { class: `card result-card ${kind}`, 'aria-labelledby': 'result-title' },
+    h('div', { class: 'result-icon' }, icon(iconName)),
     h('h2', { id: 'result-title', tabindex: '-1' }, resultHeadline(r)),
-    h('p', { class: 'muted' }, r.reason),
-    r.problem ? h('p', {}, 'Problem: ', h('a', { href: `/practice.html?id=${encodeURIComponent(r.problem.id)}` }, r.problem.title), ` (${r.problem.difficulty}) · Round ${r.roundNumber}`) : null,
-    h('ul', { class: 'result-list' }, r.players.map((p) => h('li', {},
-      h('strong', {}, p.name), ` — ${statusText[p.status] || p.status}`, p.seat === r.winnerSeat ? ' 🏆' : '', h('span', { class: 'muted' }, ` · ${p.submissions} submission${p.submissions === 1 ? '' : 's'}`)))),
-    h('div', { class: 'row' },
+    h('p', { class: 'reason' }, r.reason),
+    r.problem ? h('div', { class: 'result-problem' }, icon('target', 'icon icon-sm'), h('a', { href: `/practice.html?id=${encodeURIComponent(r.problem.id)}` }, r.problem.title), difficultyBadge(r.problem.difficulty), h('span', {}, `Round ${r.roundNumber}`)) : null,
+    h('ul', { class: 'result-players result-list' }, r.players.map((p) => h('li', { class: `result-player${p.seat === r.winnerSeat ? ' winner' : ''}` },
+      avatar(p.name),
+      h('div', { class: 'info' },
+        h('span', { class: 'name' }, p.name, p.seat === r.winnerSeat ? icon('trophy') : null),
+        h('span', { class: 'sub' }, `${statusText[p.status] || p.status} · ${p.submissions} submission${p.submissions === 1 ? '' : 's'}`))))),
+    h('div', { class: 'result-actions' },
       snap.you.isHost
-        ? h('button', { class: 'btn btn-primary', type: 'button', disabled: !opp || null, onclick: () => command('room:rematch') }, 'Rematch (new problem)')
+        ? h('button', { class: 'btn btn-primary btn-large', type: 'button', disabled: !opp || null, onclick: () => command('room:rematch') }, icon('refresh'), 'Rematch (new problem)')
         : h('span', { class: 'muted' }, 'Waiting for the host to start a rematch.'),
-      !opp ? h('span', { class: 'muted' }, 'Your opponent left the room.') : null,
-      h('a', { class: 'btn', href: '/problems.html' }, 'Return to library'),
-      h('button', { class: 'btn btn-ghost', type: 'button', onclick: leaveRoom }, snap.you.isHost ? 'Close room' : 'Leave room')),
-    h('p', { class: 'muted' }, 'Your code from the round stays below. Opponents never see each other’s code.')));
+      h('a', { class: 'btn btn-large', href: '/problems.html' }, icon('problems'), 'Return to library'),
+      h('button', { class: 'btn btn-ghost btn-large', type: 'button', onclick: leaveRoom }, snap.you.isHost ? 'Close room' : 'Leave room')),
+    !opp ? h('p', { class: 'result-note' }, 'Your opponent left the room.') : null,
+    h('p', { class: 'result-note' }, 'Your code from the round stays below. Opponents never see each other’s code.')));
 }
 
 // ---------- boot ----------

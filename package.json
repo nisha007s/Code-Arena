@@ -21,7 +21,8 @@
     "postinstall": "node scripts/generate-fixtures.js --check",
     "check:integration": "npm run judge:smoke && npm run judge:sandbox && npm run check:starters && npm run e2e",
     "judge:sandbox": "node --disable-warning=ExperimentalWarning scripts/verify-sandbox.js",
-    "check:references": "node --disable-warning=ExperimentalWarning scripts/check-references.js"
+    "check:references": "node --disable-warning=ExperimentalWarning scripts/check-references.js",
+    "screenshots": "node --disable-warning=ExperimentalWarning scripts/screenshots.js"
   },
   "dependencies": {
     "express": "^5.3.0",
