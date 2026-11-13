@@ -3,26 +3,43 @@
 //   Esc, then Tab     move focus out of the editor (keyboard escape hatch)
 //   Enter             keeps the current line's indentation
 //   Ctrl/⌘+Enter      Run          Ctrl/⌘+Shift+Enter   Submit
+// Extras for long sessions: current-line highlight, caret position callback and
+// an adjustable font size (remembered per browser).
 import { h } from './ui.js';
 
 const INDENT = '    ';
+const FONT_KEY = 'code-arena.editor-font';
+export const FONT_MIN = 12;
+export const FONT_MAX = 20;
+
+export function savedFontSize() {
+  let v = 14;
+  try { v = Number(localStorage.getItem(FONT_KEY)) || 14; } catch { /* storage blocked */ }
+  return Math.min(FONT_MAX, Math.max(FONT_MIN, v));
+}
 
 export class CodeEditor {
-  constructor(host, { id, label, onChange, onRun, onSubmit, onEscapeArmed }) {
+  constructor(host, { id, label, onChange, onRun, onSubmit, onEscapeArmed, onCursor }) {
     this.onChange = onChange;
+    this.onCursor = onCursor;
     this.gutter = h('div', { class: 'editor-gutter', 'aria-hidden': 'true' }, '1');
+    this.lineHighlight = h('div', { class: 'editor-line', 'aria-hidden': 'true' });
     this.input = h('textarea', {
       id, class: 'editor-input', spellcheck: 'false', autocapitalize: 'off', autocomplete: 'off',
       autocorrect: 'off', wrap: 'off', 'aria-label': label, 'aria-describedby': id + '-help', 'aria-multiline': 'true',
     });
-    this.root = h('div', { class: 'editor' }, this.gutter, this.input);
+    this.root = h('div', { class: 'editor' }, this.lineHighlight, this.gutter, this.input);
     host.append(this.root);
     this.escapeArmed = false;
     this.lines = 0;
+    this.setFontSize(savedFontSize(), false);
 
-    this.input.addEventListener('input', () => { this.#renderGutter(); this.onChange?.(this.input.value); });
-    this.input.addEventListener('scroll', () => { this.gutter.scrollTop = this.input.scrollTop; });
-    this.input.addEventListener('blur', () => { this.escapeArmed = false; });
+    const caret = () => this.#updateCaret();
+    this.input.addEventListener('input', () => { this.#renderGutter(); this.onChange?.(this.input.value); caret(); });
+    this.input.addEventListener('scroll', () => { this.gutter.scrollTop = this.input.scrollTop; caret(); });
+    for (const ev of ['keyup', 'mouseup', 'focus', 'select']) this.input.addEventListener(ev, caret);
+    this.input.addEventListener('focus', () => this.root.classList.add('is-focused'));
+    this.input.addEventListener('blur', () => { this.escapeArmed = false; this.root.classList.remove('is-focused'); });
     this.input.addEventListener('keydown', (e) => {
       const mod = e.ctrlKey || e.metaKey;
       if (mod && e.key === 'Enter') { e.preventDefault(); (e.shiftKey ? onSubmit : onRun)?.(); return; }
@@ -50,10 +67,21 @@ export class CodeEditor {
     this.input.value = v;
     this.input.scrollTop = 0;
     this.#renderGutter();
+    this.#updateCaret();
   }
 
   setReadOnly(ro) { this.input.readOnly = ro; }
   focus() { this.input.focus(); }
+
+  get fontSize() { return this.font; }
+  setFontSize(px, persist = true) {
+    this.font = Math.min(FONT_MAX, Math.max(FONT_MIN, px));
+    this.root.style.setProperty('--editor-font', `${this.font}px`); // CSSOM: allowed by the CSP
+    this.root.style.setProperty('--editor-line', `${Math.round(this.font * 1.62)}px`);
+    if (persist) { try { localStorage.setItem(FONT_KEY, String(this.font)); } catch { /* ignore */ } }
+    this.#updateCaret();
+    return this.font;
+  }
 
   // Prefer execCommand so the browser's undo history keeps working.
   #insert(text) {
@@ -86,6 +114,19 @@ export class CodeEditor {
     this.input.setSelectionRange(start, end);
     this.#insert(next);
     this.input.setSelectionRange(start, start + next.length);
+  }
+
+  #updateCaret() {
+    if (!this.input) return;
+    const { value, selectionStart } = this.input;
+    const before = value.slice(0, selectionStart);
+    const line = before.split('\n').length;
+    const col = selectionStart - before.lastIndexOf('\n');
+    const lh = Math.round((this.font || 14) * 1.62);
+    const top = 12 + (line - 1) * lh - this.input.scrollTop; // 12px = editor top padding
+    this.lineHighlight.style.transform = `translateY(${top}px)`;
+    this.lineHighlight.style.height = `${lh}px`;
+    this.onCursor?.({ line, col, lines: this.lines || value.split('\n').length });
   }
 
   #renderGutter() {

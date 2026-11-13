@@ -15,6 +15,43 @@ const LANGUAGES = [
   ['csharp', 'C# (.NET 10)'],
 ];
 const FILE_NAMES = { python: 'main.py', javascript: 'main.js', java: 'Main.java', cpp: 'main.cpp', csharp: 'Main.cs' };
+const LAYOUT_KEY = 'code-arena.layout';
+function loadLayout() {
+  try { return { problem: 40, console: 36, ...JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}') }; } catch { return { problem: 40, console: 36 }; }
+}
+function saveLayout(layout) { try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout)); } catch { /* ignore */ } }
+
+/** Accessible splitter: drag with a pointer, or focus it and use the arrow keys. */
+function splitter({ orientation, label, getPct, setPct, container }) {
+  const el = h('div', { class: `resizer resizer-${orientation === 'vertical' ? 'x' : 'y'}`, role: 'separator', tabindex: '0', 'aria-orientation': orientation, 'aria-label': label, 'aria-valuemin': '20', 'aria-valuemax': '75' });
+  const sync = () => el.setAttribute('aria-valuenow', String(Math.round(getPct())));
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('is-dragging');
+    document.documentElement.classList.add(orientation === 'vertical' ? 'is-resizing-x' : 'is-resizing-y');
+    const move = (ev) => {
+      const r = container().getBoundingClientRect();
+      const pct = orientation === 'vertical' ? ((ev.clientX - r.left) / r.width) * 100 : ((r.bottom - ev.clientY) / r.height) * 100;
+      setPct(pct); sync();
+    };
+    const up = () => {
+      el.classList.remove('is-dragging');
+      document.documentElement.classList.remove('is-resizing-x', 'is-resizing-y');
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+  el.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 10 : 3;
+    const keys = orientation === 'vertical' ? { ArrowLeft: -step, ArrowRight: step } : { ArrowUp: step, ArrowDown: -step };
+    if (keys[e.key] !== undefined) { e.preventDefault(); setPct(getPct() + keys[e.key]); sync(); }
+  });
+  el.addEventListener('dblclick', () => { setPct(orientation === 'vertical' ? 40 : 36); sync(); });
+  sync();
+  return el;
+}
+
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 const MOD = isMac ? '⌘' : 'Ctrl';
 
@@ -74,6 +111,12 @@ export class Workspace {
     this.customBox = h('div', { class: 'custom-input', hidden: true }, h('label', { for: `${uid}-stdin` }, 'Custom input (stdin). Run uses this instead of the examples.'), this.customInput);
     this.customToggle.addEventListener('change', () => { this.customBox.hidden = !this.customToggle.checked; });
     this.lockNote = h('span', { class: 'lock-note', 'aria-live': 'polite' });
+    this.cursorEl = h('span', { class: 'status-item', 'aria-hidden': 'true' }, 'Ln 1, Col 1');
+    this.langStatus = h('span', { class: 'status-item status-lang' }, 'Python 3');
+    this.fontLabel = h('span', { class: 'font-size', 'aria-live': 'polite' }, '14px');
+    const fontBtn = (delta, text, lbl) => h('button', { class: 'status-btn', type: 'button', 'aria-label': lbl, title: lbl, onclick: () => { this.fontLabel.textContent = `${this.editor.setFontSize(this.editor.fontSize + delta)}px`; } }, text);
+    this.fontControls = h('span', { class: 'status-item font-controls', role: 'group', 'aria-label': 'Editor font size' },
+      fontBtn(-1, 'A−', 'Smaller editor font'), this.fontLabel, fontBtn(1, 'A+', 'Larger editor font'));
     this.console = h('div', { class: 'console-body' });
     const consolePanel = h('section', { class: 'console pane panel', id: `${uid}-results`, role: 'tabpanel', 'aria-labelledby': `${uid}-tab-results`, 'aria-label': 'Results' },
       h('div', { class: 'panel-head' }, h('span', { class: 'title' }, icon('terminal'), 'Console'), this.consoleStatus),
@@ -84,12 +127,23 @@ export class Workspace {
       : h('span', { class: 'title' }, icon('target'), 'Round problem');
 
     const editorHost = h('div', { class: 'editor-host' });
+    this.layout = loadLayout();
+    const applyLayout = () => {
+      this.root.style.setProperty('--problem-w', `${this.layout.problem}%`); // CSSOM custom properties (CSP-safe)
+      this.root.style.setProperty('--console-h', `${this.layout.console}%`);
+    };
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    this.splitX = splitter({ orientation: 'vertical', label: 'Resize problem and editor panels', container: () => this.root,
+      getPct: () => this.layout.problem, setPct: (p) => { this.layout.problem = clamp(p, 24, 62); applyLayout(); saveLayout(this.layout); } });
+    this.splitY = splitter({ orientation: 'horizontal', label: 'Resize editor and console', container: () => this.codeCol,
+      getPct: () => this.layout.console, setPct: (p) => { this.layout.console = clamp(p, 18, 70); applyLayout(); saveLayout(this.layout); } });
     this.root = h('div', { class: 'workspace', 'data-pane': 'editor' },
       h('div', { class: 'pane-tabs', role: 'tablist', 'aria-label': 'Workspace panes' }, tabs),
       h('section', { class: 'pane pane-problem panel', id: `${uid}-problem`, role: 'tabpanel', 'aria-labelledby': `${uid}-tab-problem` },
         h('div', { class: 'panel-head' }, problemHead, h('span', { class: 'spacer' }), h('span', { class: 'faint' }, 'Description')),
         h('div', { class: 'problem-scroll' }, renderProblem(problem))),
-      h('div', { class: 'code-col' },
+      this.splitX,
+      this.codeCol = h('div', { class: 'code-col' },
         h('div', { class: 'editor-area panel', id: `${uid}-editor`, role: 'tabpanel', 'aria-labelledby': `${uid}-tab-editor` },
           h('div', { class: 'toolbar' },
             this.fileTab,
@@ -100,21 +154,35 @@ export class Workspace {
               this.runBtn, this.submitBtn)),
           editorHost,
           this.customBox,
-          h('div', { class: 'run-row' },
+          h('div', { class: 'run-row status-bar' },
             this.lockNote,
+            this.cursorEl,
+            h('span', { class: 'status-item status-hide-sm', 'aria-hidden': 'true' }, 'Spaces: 4'),
+            this.langStatus,
             h('span', { class: 'spacer' }),
-            h('span', { class: 'editor-hint', id: `${uid}-code-help` }, 'Tab indents · Esc then Tab leaves the editor · ', h('kbd', {}, MOD), '+', h('kbd', {}, 'Enter'), ' Run · ', h('kbd', {}, MOD), '+', h('kbd', {}, 'Shift'), '+', h('kbd', {}, 'Enter'), ' Submit'))),
+            // Full sentence for screen readers (the editor's aria-describedby); compact key caps on screen.
+            h('span', { class: 'editor-hint', id: `${uid}-code-help`, title: `Tab indents · Esc then Tab leaves the editor · ${MOD}+Enter runs · ${MOD}+Shift+Enter submits` },
+              h('span', { class: 'visually-hidden' }, `Tab indents. Press Escape, then Tab, to leave the editor. ${MOD} plus Enter runs your code. ${MOD} plus Shift plus Enter submits.`),
+              h('span', { class: 'hint-keys', 'aria-hidden': 'true' },
+                h('span', { class: 'hint-group' }, h('kbd', {}, 'Esc'), h('kbd', {}, 'Tab'), ' leave'),
+                h('span', { class: 'hint-group' }, h('kbd', {}, MOD), h('kbd', {}, '↵'), ' Run'),
+                h('span', { class: 'hint-group' }, h('kbd', {}, MOD), h('kbd', {}, '⇧'), h('kbd', {}, '↵'), ' Submit'))),
+            this.fontControls)),
+        this.splitY,
         consolePanel),
     );
     host.replaceChildren(this.root);
+    applyLayout();
 
     this.editor = new CodeEditor(editorHost, {
       id: `${uid}-code`, label: `Code editor for ${problem.title}`,
       onChange: (v) => drafts.save(guestId, scope, problem.id, this.language, v),
       onRun: () => this.run(), onSubmit: () => this.submit(),
       onEscapeArmed: () => announce('Press Tab to leave the editor.'),
+      onCursor: ({ line, col }) => { if (this.cursorEl) this.cursorEl.textContent = `Ln ${line}, Col ${col}`; },
     });
     this.editor.input.setAttribute('aria-describedby', `${uid}-code-help`);
+    this.fontLabel.textContent = `${this.editor.fontSize}px`;
 
     this.language = drafts.lastLanguage(guestId, scope, problem.id) || drafts.lastLanguage(guestId, 'practice', problem.id) || 'python';
     if (!LANGUAGES.some(([id]) => id === this.language)) this.language = 'python';
@@ -158,6 +226,7 @@ export class Workspace {
 
   #syncFileTab() {
     this.fileTab.lastChild.textContent = FILE_NAMES[this.language] || 'main';
+    this.langStatus.textContent = this.langSelect.selectedOptions[0]?.textContent || this.language;
   }
 
   showPane(name) {

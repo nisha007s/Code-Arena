@@ -25,6 +25,9 @@ const py = (id) => fs.readFileSync(path.join(bank.get(id).dir, 'reference.py'), 
 const browser = await puppeteer.launch({ executablePath: chrome, headless: true });
 const DESKTOP = { width: 1440, height: 900 };
 const PHONE = { width: 390, height: 844, isMobile: true, deviceScaleFactor: 2 };
+const TABLET = { width: 820, height: 1180, isMobile: true };
+const LAPTOP = { width: 1024, height: 768 };
+const SUFFIX = new Map([[PHONE, '-phone'], [TABLET, '-tablet'], [LAPTOP, '-laptop']]);
 const errors = [];
 
 async function player(name) {
@@ -48,7 +51,7 @@ async function shot(page, name, { theme = 'dark', viewport = DESKTOP, full = fal
   await page.setViewport(viewport);
   await page.reload({ waitUntil: 'networkidle0' });
   await new Promise((r) => setTimeout(r, 400));
-  await page.screenshot({ path: path.join(out, `${name}-${theme}${viewport === PHONE ? '-phone' : ''}.png`), fullPage: full });
+  await page.screenshot({ path: path.join(out, `${name}-${theme}${SUFFIX.get(viewport) || ''}.png`), fullPage: full });
 }
 async function practiceSubmit(page, id, language, source) {
   await page.goto(`${base}/practice.html?id=${id}`);
@@ -128,6 +131,11 @@ try {
   }
   await ada.goto(`${base}/practice.html?id=target-pair`);
   await shot(ada, 'practice', { viewport: PHONE });
+  await shot(ada, 'practice', { viewport: TABLET });
+  await shot(ada, 'practice', { viewport: LAPTOP });
+  await ada.goto(`${base}/`);
+  await shot(ada, 'home', { viewport: TABLET });
+  await shot(ada, 'home', { theme: 'light', viewport: LAPTOP });
 
   // Theme toggle works without reload and persists.
   await ada.setViewport(DESKTOP);
@@ -139,11 +147,13 @@ try {
   const persisted = await ada.evaluate(() => document.documentElement.dataset.theme);
   console.log(`theme toggle: ${before} → ${after} (no reload), after reload: ${persisted}`);
   const overflow = [];
-  for (const file of ['/', '/problems.html', '/history.html', '/progress.html', '/arena.html', '/practice.html?id=island-count']) {
-    await ada.setViewport(PHONE); await ada.goto(base + file, { waitUntil: 'networkidle0' });
-    if (await ada.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) overflow.push(file);
+  for (const vp of [PHONE, TABLET, LAPTOP, DESKTOP]) {
+    for (const file of ['/', '/problems.html', '/history.html', '/progress.html', '/arena.html', '/practice.html?id=island-count']) {
+      await ada.setViewport(vp); await ada.goto(base + file, { waitUntil: 'networkidle0' });
+      if (await ada.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) overflow.push(`${file} @${vp.width}px`);
+    }
   }
-  console.log(`phone horizontal overflow: ${overflow.length ? overflow.join(', ') : 'none'}`);
+  console.log(`horizontal overflow (390/820/1024/1440 px): ${overflow.length ? overflow.join(', ') : 'none'}`);
 } catch (e) {
   console.error('screenshot run failed:', e.message);
   process.exitCode = 1;

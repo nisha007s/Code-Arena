@@ -170,13 +170,25 @@ const isOnline = (p) => p.connected || (p.isYou && socket?.connected);
 const connEl = (p) => h('span', { class: `conn ${isOnline(p) ? 'conn-on' : 'conn-off'}` }, isOnline(p) ? 'Online' : 'Offline');
 
 // Scoreboard: player — clock — player
+// Outcome of a finished round from one player's point of view (from the server result only).
+function outcomeFor(p) {
+  const r = snap?.phase === 'finished' ? snap.result : null;
+  if (!r || !p) return null;
+  if (r.outcome === 'win') return r.winnerSeat === p.seat ? 'winner' : 'loser';
+  return r.outcome; // draw | void
+}
+const OUTCOME_LABEL = { winner: 'Winner', loser: 'Runner-up', draw: 'Draw', void: 'Void' };
+
 function playerChip(p, side) {
   if (!p) return h('div', { class: `player-empty ${side === 'right' ? 'player-right' : ''}` }, h('span', { class: 'avatar' }, '?'), 'Waiting for opponent…');
-  return h('div', { class: `player ${side === 'right' ? 'player-right' : ''}` },
+  const outcome = outcomeFor(p);
+  return h('div', { class: `player state-${p.status}${outcome ? ` is-${outcome}` : ''} ${side === 'right' ? 'player-right' : ''}` },
     avatar(p.name),
     h('div', { class: 'player-info' },
       h('span', { class: 'player-name' }, p.name, p.isYou ? h('span', { class: 'you' }, '(you)') : null),
-      h('span', { class: 'player-meta' }, connEl(p), h('span', { class: `pstatus pstatus-${p.status}` }, STATUS_TEXT[p.status] || p.status))));
+      h('span', { class: 'player-meta' }, connEl(p),
+        h('span', { class: `pstatus pstatus-${p.status}` }, STATUS_TEXT[p.status] || p.status),
+        outcome ? h('span', { class: `outcome-tag outcome-tag-${outcome}` }, outcome === 'winner' ? icon('trophy', 'icon icon-sm') : null, OUTCOME_LABEL[outcome]) : null)));
 }
 
 const timerEl = h('span', { class: 'timer', role: 'timer', 'aria-label': 'Time remaining' }, '10:00');
@@ -188,10 +200,11 @@ function renderHeader() {
   const inRound = snap.round && snap.phase !== 'lobby';
   const center = h('div', { class: 'match-center' },
     h('div', { class: 'match-meta' }, inRound ? `Round ${snap.round.number}` : 'Lobby', h('span', { 'aria-hidden': 'true' }, '·'), 'Room ', h('strong', {}, snap.code)),
-    inRound ? timerEl : h('span', { class: 'vs-mark' }, 'VS'),
+    inRound ? h('div', { class: `timer-box phase-${snap.phase}` }, icon(snap.phase === 'finished' ? 'flag' : 'timer', 'icon icon-sm'), timerEl) : h('span', { class: 'vs-mark' }, 'VS'),
     inRound ? trackEl : null,
     inRound && snap.round.problem ? h('span', { class: 'match-problem' }, snap.round.problem.title) : null);
   headerEl.replaceChildren(playerChip(a, 'left'), center, playerChip(b, 'right'));
+  roomEl.dataset.phase = snap.phase; // lobby hides the scoreboard; CSS styles each phase
   tick();
 }
 
@@ -260,7 +273,7 @@ function renderLobby() {
         fighter(snap.players[1], 1)),
       h('div', { class: 'countdown' },
         h('div', { class: 'label' }, 'Match status'),
-        h('div', { class: 'value' }, statusText),
+        h('div', { class: `value${bothReady ? ' is-go' : ''}` }, statusText),
         h('div', { class: 'lobby-actions' },
           h('button', { class: 'btn btn-large', type: 'button', 'aria-pressed': String(Boolean(you?.ready)), onclick: () => command('room:ready', { ready: !you.ready }) }, you?.ready ? '✓ Ready' : 'Ready'),
           snap.you.isHost
