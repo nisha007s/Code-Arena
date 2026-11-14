@@ -54,6 +54,11 @@ export function createApp(config, deps = {}) {
 
   app.use(securityHeaders(config.secureCookies));
   app.use('/api', apiRouter({ config, clock, q, bank, sessions, judge, jobs, rooms, recIndex }));
+  // The shared frontend defaults to the Supabase backend; this server answers for itself.
+  app.get('/js/config.js', (_req, res) => {
+    res.type('application/javascript').set('Cache-Control', 'no-store')
+      .send("export const CONFIG = { backend: 'local', languages: [] };\n");
+  });
   app.use(express.static(path.join(projectRoot, 'public'), { extensions: ['html'], index: 'index.html' }));
   app.use(errorHandler(log));
 

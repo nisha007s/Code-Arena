@@ -17,11 +17,19 @@ for (const language of LANGUAGE_IDS) {
     skipped += bank.list.length;
     continue;
   }
-  const work = bank.list.map(async (p) => {
-    const res = await executeJob({ driver, scratchDir: config.scratchDir, language, source: starterFor(p, language), mode: 'run', cases: [], limits: config.judge, signal: new AbortController().signal });
-    return [p, res];
-  });
-  for (const [p, res] of await Promise.all(work)) {
+  // Compile at most 4 at a time: the real judge queue never runs 12 compiles at once,
+  // and a burst like that can exceed compile time limits on a busy laptop.
+  const results = [];
+  const queue = [...bank.list];
+  const worker = async () => {
+    for (let p = queue.shift(); p; p = queue.shift()) {
+      const res = await executeJob({ driver, scratchDir: config.scratchDir, language, source: starterFor(p, language), mode: 'run', cases: [], limits: config.judge, signal: new AbortController().signal });
+      results.push([p, res]);
+    }
+  };
+  await Promise.all(Array.from({ length: 4 }, worker));
+  results.sort((a, b) => a[0].number - b[0].number);
+  for (const [p, res] of results) {
     if (res.verdict === 'AC') ok++;
     else { failed++; console.log(`  ✗  ${language} / ${p.id}: ${res.compile?.output?.slice(0, 300)}`); }
   }

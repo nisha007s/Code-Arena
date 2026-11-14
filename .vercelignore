@@ -1,0 +1,5 @@
+# Vercel only needs the static frontend. Never upload the problem bank (reference
+# solutions, fixture generator), server code, tests or local data.
+/*
+!/public
+!/vercel.json

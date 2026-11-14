@@ -26,10 +26,18 @@ if (!executablePath) { console.error('No Chrome/Edge found. Set CHROME_PATH.'); 
 const out = path.join(projectRoot, 'test-artifacts');
 fs.mkdirSync(out, { recursive: true });
 const dataDir = fs.mkdtempSync(path.join(out, 'data-'));
-const config = loadConfig({ overrides: { port: 0, match: { durationMs: 120000, settleMs: 20000 } } });
-const server = createApp(config, { quiet: true, dbFile: path.join(dataDir, 'e2e.sqlite') });
-const { port } = await server.start();
-const base = `http://127.0.0.1:${port}`;
+// E2E_BASE_URL=https://your-site.vercel.app runs the same checks against a deployed site.
+const remote = process.env.E2E_BASE_URL ? process.env.E2E_BASE_URL.replace(/\/+$/, '') : null;
+// The Supabase deployment offers Python and JavaScript only: E2E_ALT_LANG=javascript.
+const altLang = process.env.E2E_ALT_LANG || 'java';
+const altMarker = altLang === 'java' ? 'public class Main' : "readFileSync(0, 'utf8')";
+let server = null, base = remote;
+if (!remote) {
+  const config = loadConfig({ overrides: { port: 0, match: { durationMs: 120000, settleMs: 20000 } } });
+  server = createApp(config, { quiet: true, dbFile: path.join(dataDir, 'e2e.sqlite') });
+  const { port } = await server.start();
+  base = `http://127.0.0.1:${port}`;
+}
 const bank = loadProblemBank();
 
 // Paste-ready programs for whatever problem the round picks.
@@ -41,23 +49,42 @@ let failures = 0;
 const check = (ok, what) => { console.log(`  ${ok ? '✓' : '✗'}  ${what}`); if (!ok) failures++; };
 const browser = await puppeteer.launch({ executablePath, headless: true, args: ['--no-first-run', '--no-default-browser-check'] });
 const cspErrors = [];
+let wsFallbacks = 0;
 async function newPlayer(name, viewport = { width: 1366, height: 860 }) {
   const ctx = await browser.createBrowserContext(); // separate cookies = separate guest
   const page = await ctx.newPage();
   await page.setViewport(viewport);
   // Expected HTTP errors (401 retry on first load, 409 room full) are not script errors.
-  page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) cspErrors.push(`${name}: ${m.text()}`); });
+  page.on('console', (m) => {
+    if (m.type() !== 'error' || m.text().startsWith('Failed to load resource')) return;
+    // A refused WebSocket handshake is transport negotiation (Socket.IO then uses polling), not an app error.
+    if (/^WebSocket connection to .* failed/.test(m.text())) { wsFallbacks++; return; }
+    cspErrors.push(`${name}: ${m.text()}`);
+  });
   page.on('pageerror', (e) => cspErrors.push(`${name}: ${e.message}`));
   page.setDefaultTimeout(30000);
   return page;
 }
 const text = (page, sel) => page.$eval(sel, (el) => el.textContent.trim());
 const setCode = (page, code) => page.$eval('.editor-input', (el, c) => { el.value = c; el.dispatchEvent(new Event('input')); }, code);
-const clickText = async (page, label) => { const el = await page.waitForSelector(`button::-p-text(${label})`); await el.click(); };
+// The lobby re-renders on every room update, so a button can be replaced between finding and
+// clicking it (more likely over HTTP long-polling). Retry with a fresh lookup in that case.
+const clickText = async (page, label) => {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const el = await page.waitForSelector(`button::-p-text(${label})`);
+      await el.click();
+      return;
+    } catch (e) {
+      if (attempt >= 4 || !/detached|not clickable|Node is either/i.test(e.message)) throw e;
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  }
+};
 const shot = (page, name) => page.screenshot({ path: path.join(out, name), fullPage: false });
 
 try {
-  console.log(`Server ${base} · judge: ${server.services.judge.status().driver}`);
+  console.log(`Server ${base} · judge: ${server ? server.services.judge.status().driver : 'remote (see /api/judge/health)'}`);
 
   // ---------- practice workspace ----------
   const solo = await newPlayer('solo');
@@ -84,8 +111,8 @@ try {
   await solo.waitForFunction(() => document.querySelector('.console')?.textContent.includes('Hidden tests passed'), { timeout: 60000 });
   check(true, 'Ctrl+Shift+Enter submits; hidden tests passed');
   // language switch keeps drafts per language
-  await solo.select('.toolbar select', 'java');
-  check((await solo.$eval('.editor-input', (el) => el.value)).includes('public class Main'), 'switching to Java shows the Java starter');
+  await solo.select('.toolbar select', altLang);
+  check((await solo.$eval('.editor-input', (el) => el.value)).includes(altMarker), `switching to ${altLang} shows its starter`);
   await solo.select('.toolbar select', 'python');
   check((await solo.$eval('.editor-input', (el) => el.value)).includes('seen = set()'), 'switching back restores the Python draft');
   // keyboard: Tab indents, Esc then Tab leaves the editor
@@ -203,13 +230,14 @@ try {
   check(true, 'history shows the won match and submissions');
   await shot(host, 'history.png');
   check(cspErrors.length === 0, `no console/CSP errors${cspErrors.length ? ': ' + cspErrors.slice(0, 3).join(' | ') : ''}`);
+  if (wsFallbacks) console.log(`  i  WebSocket was refused ${wsFallbacks} time(s); Socket.IO used HTTP long-polling instead`);
 } catch (e) {
   failures++;
   console.error('  ✗  ' + e.message);
   for (const [i, p] of (await browser.pages()).entries()) await p.screenshot({ path: path.join(out, `failure-${i}.png`) }).catch(() => {});
 } finally {
   await browser.close();
-  await server.stop();
+  if (server) await server.stop();
   fs.rmSync(dataDir, { recursive: true, force: true });
 }
 console.log(failures ? `\n${failures} browser check(s) FAILED` : '\nAll browser checks passed. Screenshots in test-artifacts/.');

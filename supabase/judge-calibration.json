@@ -1,0 +1,194 @@
+[
+ {
+  "dir": "01-target-pair",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 189,
+  "limit": 600,
+  "refShare": 0.32
+ },
+ {
+  "dir": "01-target-pair",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 131,
+  "limit": 500,
+  "refShare": 0.26
+ },
+ {
+  "dir": "02-bracket-check",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 91,
+  "limit": 500,
+  "refShare": 0.18
+ },
+ {
+  "dir": "02-bracket-check",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 172,
+  "limit": 550,
+  "refShare": 0.31
+ },
+ {
+  "dir": "03-first-occurrence",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 410,
+  "limit": 1200,
+  "refShare": 0.34
+ },
+ {
+  "dir": "03-first-occurrence",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 163,
+  "limit": 500,
+  "refShare": 0.33
+ },
+ {
+  "dir": "04-longest-streak",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 253,
+  "limit": 800,
+  "refShare": 0.32
+ },
+ {
+  "dir": "04-longest-streak",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 39,
+  "limit": 500,
+  "refShare": 0.08
+ },
+ {
+  "dir": "05-maximum-segment-sum",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 354,
+  "limit": 1100,
+  "refShare": 0.32
+ },
+ {
+  "dir": "05-maximum-segment-sum",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 135,
+  "limit": 500,
+  "refShare": 0.27
+ },
+ {
+  "dir": "06-unique-window",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 67,
+  "limit": 500,
+  "refShare": 0.13
+ },
+ {
+  "dir": "06-unique-window",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 412,
+  "limit": 1200,
+  "refShare": 0.34
+ },
+ {
+  "dir": "07-merge-maintenance-slots",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 360,
+  "limit": 1100,
+  "refShare": 0.33
+ },
+ {
+  "dir": "07-merge-maintenance-slots",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 118,
+  "limit": 500,
+  "refShare": 0.24
+ },
+ {
+  "dir": "08-minimum-coins",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 38,
+  "limit": 500,
+  "refShare": 0.08
+ },
+ {
+  "dir": "08-minimum-coins",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 253,
+  "limit": 800,
+  "refShare": 0.32
+ },
+ {
+  "dir": "09-island-count",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 233,
+  "limit": 700,
+  "refShare": 0.33
+ },
+ {
+  "dir": "09-island-count",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 329,
+  "limit": 1000,
+  "refShare": 0.33
+ },
+ {
+  "dir": "10-next-warmer-day",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 357,
+  "limit": 1100,
+  "refShare": 0.32
+ },
+ {
+  "dir": "10-next-warmer-day",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 127,
+  "limit": 500,
+  "refShare": 0.25
+ },
+ {
+  "dir": "11-cheapest-route",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 381,
+  "limit": 1150,
+  "refShare": 0.33
+ },
+ {
+  "dir": "11-cheapest-route",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 149,
+  "limit": 500,
+  "refShare": 0.3
+ },
+ {
+  "dir": "12-minimum-cover-window",
+  "lang": "javascript",
+  "verdicts": "AC/AC",
+  "slowestMs": 168,
+  "limit": 550,
+  "refShare": 0.31
+ },
+ {
+  "dir": "12-minimum-cover-window",
+  "lang": "python",
+  "verdicts": "AC/AC",
+  "slowestMs": 354,
+  "limit": 1100,
+  "refShare": 0.32
+ }
+]

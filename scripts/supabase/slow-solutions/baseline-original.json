@@ -1,0 +1,72 @@
+{
+ "01-target-pair/javascript": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 3000
+ },
+ "01-target-pair/python": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 4000
+ },
+ "03-first-occurrence/javascript": {
+  "verdict": "AC",
+  "failedAt": null,
+  "slowestMs": 186
+ },
+ "03-first-occurrence/python": {
+  "verdict": "AC",
+  "failedAt": null,
+  "slowestMs": 157
+ },
+ "04-longest-streak/javascript": {
+  "verdict": "AC",
+  "failedAt": null,
+  "slowestMs": 102
+ },
+ "04-longest-streak/python": {
+  "verdict": "AC",
+  "failedAt": null,
+  "slowestMs": 272
+ },
+ "05-maximum-segment-sum/javascript": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 3000
+ },
+ "05-maximum-segment-sum/python": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 4000
+ },
+ "07-merge-maintenance-slots/javascript": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 3000
+ },
+ "07-merge-maintenance-slots/python": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 4000
+ },
+ "10-next-warmer-day/javascript": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 3000
+ },
+ "10-next-warmer-day/python": {
+  "verdict": "TLE",
+  "failedAt": "hidden-05.in",
+  "slowestMs": 4000
+ },
+ "11-cheapest-route/javascript": {
+  "verdict": "TLE",
+  "failedAt": "hidden-06.in",
+  "slowestMs": 3000
+ },
+ "11-cheapest-route/python": {
+  "verdict": "TLE",
+  "failedAt": "hidden-06.in",
+  "slowestMs": 4000
+ }
+}

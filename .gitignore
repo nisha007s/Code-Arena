@@ -45,3 +45,13 @@ tmp/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Vercel CLI project link (created by `npx vercel`)
+.vercel/
+
+# Supabase build outputs (hidden tests, Python runtime, generated runner lanes) and CLI state
+supabase/.build/
+supabase/.temp/
+supabase/.branches/
+supabase/functions/run-*/
+supabase/functions/judge/meta.json

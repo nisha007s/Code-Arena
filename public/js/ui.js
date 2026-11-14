@@ -1,5 +1,5 @@
 // Shared UI helpers. All user-provided strings are inserted as text nodes.
-import { api, getSession } from './api.js';
+import { api, getSession, judgeHealth } from './api.js';
 import { icon } from './icons.js';
 
 export { icon };
@@ -223,7 +223,7 @@ export function watchJudge(bannerEl) {
   let state = { ready: true };
   const check = async () => {
     try {
-      state = await fetch('/api/judge/health', { credentials: 'same-origin' }).then((r) => r.json());
+      state = await judgeHealth();
     } catch {
       state = { ready: false, message: 'Cannot reach the server.' };
     }

@@ -1,0 +1,50 @@
+{
+ "01-target-pair": {
+  "javascript": 600,
+  "python": 500
+ },
+ "02-bracket-check": {
+  "javascript": 500,
+  "python": 550
+ },
+ "03-first-occurrence": {
+  "javascript": 1200,
+  "python": 500
+ },
+ "04-longest-streak": {
+  "javascript": 800,
+  "python": 500
+ },
+ "05-maximum-segment-sum": {
+  "javascript": 1100,
+  "python": 500
+ },
+ "06-unique-window": {
+  "javascript": 500,
+  "python": 1200
+ },
+ "07-merge-maintenance-slots": {
+  "javascript": 1100,
+  "python": 500
+ },
+ "08-minimum-coins": {
+  "javascript": 500,
+  "python": 800
+ },
+ "09-island-count": {
+  "javascript": 700,
+  "python": 1000
+ },
+ "10-next-warmer-day": {
+  "javascript": 1100,
+  "python": 500
+ },
+ "11-cheapest-route": {
+  "javascript": 1150,
+  "python": 500
+ },
+ "12-minimum-cover-window": {
+  "javascript": 550,
+  "python": 1100
+ }
+}

@@ -1,7 +1,7 @@
 // Arena: private room lobby, live match and results.
 // The server is authoritative. The page renders the latest room snapshot,
 // discards stale ones by revision, and computes the timer from the server deadline.
-import { io } from '/socket.io/socket.io.esm.min.js';
+import { connectRoomSocket } from '../realtime.js';
 import { api, getSession, requestId, ApiError } from '../api.js';
 import { h, icon, avatar, initHeader, watchJudge, announce, toast, copyText, errorMessage, difficultyBadge, setWidth } from '../ui.js';
 import { Workspace } from '../workspace.js';
@@ -94,9 +94,14 @@ function subscribe() {
   });
 }
 
-function connect() {
+let connecting = null;
+async function connect() {
   if (socket) { if (socket.connected) subscribe(); return; }
-  socket = io({ transports: ['websocket', 'polling'] });
+  if (connecting) return connecting;
+  // Local backend: Socket.IO (WebSocket first, then HTTP long-polling).
+  // Supabase backend: Realtime notifications + heartbeats (see realtime.js).
+  connecting = connectRoomSocket();
+  socket = await connecting;
   socket.on('connect', () => { connBanner.hidden = true; subscribe(); });
   socket.on('disconnect', () => { connBanner.hidden = false; renderHeader(); });
   socket.on('connect_error', () => { connBanner.hidden = false; });

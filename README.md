@@ -391,6 +391,14 @@ docs/api.md             exact routes, socket events, payloads, error codes, snap
 
 ---
 
+## Deployment
+
+**Public deployment (₹0): Vercel + Supabase Free — live at https://code-arena-orpin.vercel.app.** The same frontend talks to Supabase Auth, Postgres
+(row-level security), Realtime and a WebAssembly judge (Python and JavaScript) running in Edge Functions.
+Architecture, security, limits, quotas, redeploy steps and test commands: **[docs/supabase.md](docs/supabase.md)**.
+`public/js/config.js` selects the backend; the local Express server overrides it, so `npm start` still
+runs the original five-language Docker version described above.
+
 ## 9. Commands
 
 | Command | What it does |
@@ -406,6 +414,7 @@ docs/api.md             exact routes, socket events, payloads, error codes, snap
 | `npm run check:starters` | Compile or parse all 60 starter templates in the real judge |
 | `npm run e2e` | Two-browser match in Chrome/Edge (set `CHROME_PATH` if needed) |
 | `npm run check:integration` | smoke + sandbox + starters + e2e |
+| `E2E_BASE_URL=<url> npm run e2e` | Run the two-browser match test against a deployed site |
 | `npm run screenshots` | Every page in dark and light themes, desktop and phone, after creating real activity (writes `test-artifacts/screens/`) |
 
 To run the integration scripts without Docker, using the **unsandboxed** test driver:

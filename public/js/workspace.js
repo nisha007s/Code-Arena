@@ -6,8 +6,10 @@ import { api, requestId, ApiError } from './api.js';
 import { h, icon, richText, difficultyBadge, tagList, verdictEl, announce, VERDICTS, errorMessage } from './ui.js';
 import { CodeEditor } from './editor.js';
 import { drafts } from './drafts.js';
+import { CONFIG } from './config.js';
 
-const LANGUAGES = [
+// The Supabase (WebAssembly) judge runs Python and JavaScript; the local Docker judge runs all five.
+const LANGUAGES = CONFIG.backend === 'supabase' ? CONFIG.languages : [
   ['python', 'Python 3'],
   ['javascript', 'JavaScript (Node.js)'],
   ['java', 'Java 21'],

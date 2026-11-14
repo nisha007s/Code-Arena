@@ -22,7 +22,13 @@
     "check:integration": "npm run judge:smoke && npm run judge:sandbox && npm run check:starters && npm run e2e",
     "judge:sandbox": "node --disable-warning=ExperimentalWarning scripts/verify-sandbox.js",
     "check:references": "node --disable-warning=ExperimentalWarning scripts/check-references.js",
-    "screenshots": "node --disable-warning=ExperimentalWarning scripts/screenshots.js"
+    "screenshots": "node --disable-warning=ExperimentalWarning scripts/screenshots.js",
+    "supabase:seed": "node scripts/supabase/build-seed.mjs",
+    "supabase:build": "node scripts/supabase/build-functions.mjs",
+    "supabase:serve": "node scripts/supabase/serve-static.mjs",
+    "supabase:test-api": "node scripts/supabase/test-api.mjs",
+    "supabase:test-judge": "node scripts/supabase/test-judge-gates.mjs",
+    "supabase:usage": "node scripts/supabase/usage.mjs"
   },
   "dependencies": {
     "express": "^5.3.0",
