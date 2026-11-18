@@ -2,7 +2,7 @@
 
 A coding practice site and real-time 1v1 arena for a BTech web development + AI/ML class project.
 
-- **Problem library**: 12 original problems, each with a statement, 2 public examples and 5–7 hidden tests.
+- **Problem library**: 12 original problems, each with a statement, 2 public examples and 5–7 hidden tests. 
   Search, difficulty and topic filters, and solved status.
 - **Practice workspace**: write code in Python 3, JavaScript (Node.js), Java 21, C++17 or C# (.NET 10).
   Run it against the examples or your own stdin, then submit against the hidden tests and get a real verdict.
