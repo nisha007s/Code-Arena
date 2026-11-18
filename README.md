@@ -1,4 +1,4 @@
-# Code Arena
+# Code Arena 
 
 A coding practice site and real-time 1v1 arena for a BTech web development + AI/ML class project.
 
